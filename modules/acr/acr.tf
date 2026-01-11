@@ -1,20 +1,16 @@
-resource "azurerm_resource_group" "training_global_rg" {
-  name     = "rg-training-global"
-  location = var.region
-  tags = {
-    Environment = "Training"
-  }
-}
-
-resource "random_string" "mystring" {
-  length = 4
+resource "random_string" "random_suffix" {
+  length  = 4
+  special = false
+  upper   = false
+  lower   = true
+  numeric = false
 }
 
 resource "azurerm_container_registry" "aks_acr" {
-  name                = "k8strainingacr${random_string.mystring.result}"
+  name                = "k8strainingacr${random_string.random_suffix.result}"
   location            = var.region
   sku                 = "Basic"
-  resource_group_name = azurerm_resource_group.training_global_rg.name
+  resource_group_name = var.resource_group_name
   admin_enabled       = false
   tags = {
     Environment = "Training"

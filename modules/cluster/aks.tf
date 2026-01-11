@@ -1,10 +1,13 @@
+locals {
+  cluster_name = "${var.rg_prefix}-aks-${var.cluster_name}"
+}
+
 resource "azurerm_resource_group" "aks_rg" {
-  for_each = toset(var.cluster_names)
-  name     = "rg-aks-${each.value}"
+  name     = local.cluster_name
   location = var.region
   tags = {
     Environment = "Training"
-    Cluster     = each.value
+    Cluster     = var.cluster_name
   }
 }
 
@@ -15,11 +18,10 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   #checkov:skip=CKV_AZURE_170:"For our training, a free SKU is sufficient."
   #checkov:skip=CKV_AZURE_232:"In this training also other pods than system pods should be able to use the default node pool."
 
-  for_each            = toset(var.cluster_names)
-  name                = "aks-${each.value}"
-  location            = azurerm_resource_group.aks_rg[each.key].location
-  resource_group_name = azurerm_resource_group.aks_rg[each.key].name
-  dns_prefix          = "aks-${each.value}"
+  name                = local.cluster_name
+  location            = azurerm_resource_group.aks_rg.location
+  resource_group_name = azurerm_resource_group.aks_rg.name
+  dns_prefix          = var.cluster_name
 
   api_server_access_profile {
     authorized_ip_ranges = var.authorized_ip_ranges
@@ -38,7 +40,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   workload_identity_enabled = true
   tags = {
     Environment = "Training"
-    Cluster     = each.value
+    Cluster     = var.cluster_name
   }
 
   network_profile {
@@ -63,21 +65,23 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     os_disk_type            = "Ephemeral"
     os_disk_size_gb         = 40
     upgrade_settings {
-      max_surge = "10%"
-      drain_timeout_in_minutes = 0
+      max_surge                     = "10%"
+      drain_timeout_in_minutes      = 0
       node_soak_duration_in_minutes = 0
     }
     tags = {
       Environment = "Training"
-      Cluster     = each.value
+      Cluster     = var.cluster_name
     }
   }
 }
 
 resource "azurerm_role_assignment" "example" {
-  for_each                         = azurerm_kubernetes_cluster.aks_cluster
-  principal_id                     = each.value.kubelet_identity[0].object_id
+
+  principal_id                     = azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id
   role_definition_name             = "AcrPull"
-  scope                            = azurerm_container_registry.aks_acr.id
+  scope                            = var.acr_id
   skip_service_principal_aad_check = true
 }
+
+
