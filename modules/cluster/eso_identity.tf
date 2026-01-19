@@ -1,5 +1,5 @@
 resource "azurerm_user_assigned_identity" "eso_identity" {
-  name                = "eso-identity"
+  name                = "${local.cluster_name}-eso-identity"
   location            = azurerm_resource_group.aks_rg.location
   resource_group_name = azurerm_resource_group.aks_rg.name
 }
@@ -11,8 +11,7 @@ resource "azurerm_role_assignment" "eso_kv_access" {
 }
 
 resource "azurerm_federated_identity_credential" "eso_identity" {
-
-  name                = "eso-identity-fic"
+  name                = "${local.cluster_name}-eso-identity-fic"
   resource_group_name = azurerm_kubernetes_cluster.aks_cluster.resource_group_name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url

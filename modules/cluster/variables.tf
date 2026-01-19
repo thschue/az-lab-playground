@@ -34,7 +34,12 @@ variable "dns_zone_id" {
   type        = string
 }
 
-variable "global_resource_group_id" {
-  description = "The name of the global Resource Group where shared resources are located."
+variable "devops_project_id" {
+  description = "The name of the Azure DevOps project."
+  type        = string
+}
+
+variable "participant_upn" {
+  description = "UPN of the participant for role assignments."
   type        = string
 }

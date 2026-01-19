@@ -45,5 +45,11 @@ resource "azurerm_key_vault" "training_kv" {
       "Restore",
     ]
   }
+
+  lifecycle {
+    ignore_changes = [
+      access_policy
+    ]
+  }
 }
 

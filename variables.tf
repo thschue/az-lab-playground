@@ -5,8 +5,7 @@ variable "training_name_prefix" {
 
 variable "cluster_names" {
   description = "The name of the Kubernetes clusters."
-  type        = list(string)
-  default     = ["test"]
+  type        = map(string)
 }
 
 variable "subscription_id" {
@@ -34,4 +33,26 @@ variable "tenant_id" {
 variable "dns_zone_name" {
   description = "The name of the DNS zone to be created."
   type        = string
+}
+
+variable "devops_project_name" {
+  description = "The name of the Azure DevOps project."
+  type        = string
+}
+
+variable "devops_organization_url" {
+  description = "The URL of the Azure DevOps organization."
+  type        = string
+}
+
+variable "dockerhub_username" {
+  description = "The Docker Hub username for container image storage."
+  type        = string
+  sensitive   = true
+}
+
+variable "dockerhub_password" {
+  description = "The Docker Hub password for container image storage."
+  type        = string
+  sensitive   = true
 }

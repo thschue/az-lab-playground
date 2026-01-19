@@ -1,5 +1,5 @@
-locals {
-  cluster_name = "${var.rg_prefix}-aks-${var.cluster_name}"
+data "azuread_user" "assignee" {
+  user_principal_name = var.participant_upn
 }
 
 resource "azurerm_resource_group" "aks_rg" {
@@ -7,7 +7,7 @@ resource "azurerm_resource_group" "aks_rg" {
   location = var.region
   tags = {
     Environment = "Training"
-    Cluster     = var.cluster_name
+    Cluster     = local.cluster_name
   }
 }
 
@@ -21,7 +21,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   name                = local.cluster_name
   location            = azurerm_resource_group.aks_rg.location
   resource_group_name = azurerm_resource_group.aks_rg.name
-  dns_prefix          = var.cluster_name
+  dns_prefix          = local.cluster_name
 
   api_server_access_profile {
     authorized_ip_ranges = var.authorized_ip_ranges
@@ -55,7 +55,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   default_node_pool {
     name                    = "default"
     host_encryption_enabled = true
-    vm_size                 = "Standard_D2ads_v5"
+    vm_size                 = "Standard_D2d_v4"
     node_count              = 2
     min_count               = 1
     max_count               = 3
@@ -74,14 +74,28 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
       Cluster     = var.cluster_name
     }
   }
+  lifecycle {
+    ignore_changes = [
+      api_server_access_profile
+    ]
+  }
 }
 
 resource "azurerm_role_assignment" "example" {
-
   principal_id                     = azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id
   role_definition_name             = "AcrPull"
   scope                            = var.acr_id
   skip_service_principal_aad_check = true
 }
 
+resource "azurerm_role_assignment" "aks_admin" {
+  principal_id                     = data.azuread_user.assignee.object_id
+  principal_type                   = "User"
+  role_definition_name             = "Azure Kubernetes Service RBAC Cluster Admin"
+  scope                            = azurerm_kubernetes_cluster.aks_cluster.id
+  skip_service_principal_aad_check = true
+  lifecycle {
+    ignore_changes = [principal_id]
+  }
+}
 

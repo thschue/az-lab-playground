@@ -37,3 +37,18 @@ resource "azurerm_container_registry_cache_rule" "ecr_cache_rule" {
   target_repo           = "ecr/*"
   source_repo           = "public.ecr.aws/*"
 }
+
+resource "azurerm_container_registry_cache_rule" "mcr_cache_rule" {
+  container_registry_id = azurerm_container_registry.aks_acr.id
+  name                  = "mcr-cache-rule"
+  target_repo           = "mcr/*"
+  source_repo           = "mcr.microsoft.com/*"
+}
+
+resource "azurerm_container_registry_cache_rule" "docker_cache_rule" {
+  container_registry_id = azurerm_container_registry.aks_acr.id
+  name                  = "docker-cache-rule"
+  target_repo           = "docker/*"
+  source_repo           = "docker.io/*"
+  credential_set_id     = azurerm_container_registry_credential_set.dockerhub.id
+}
