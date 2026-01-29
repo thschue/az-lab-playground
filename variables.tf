@@ -56,3 +56,15 @@ variable "dockerhub_password" {
   type        = string
   sensitive   = true
 }
+
+variable "argo_identity_name" {
+  description = "The name of the Argo CD managed identity."
+  type        = string
+}
+
+variable "argo_identity_rg_name" {
+  description = "The name of the Argo CD managed identity."
+  type        = string
+  default     = ""
+}
+

@@ -16,9 +16,3 @@ output "cert_manager_identity_client_id" {
   description = "The User Assigned Identity for External DNS."
   value       = azurerm_user_assigned_identity.cm_identity.client_id
 }
-
-output "argo_identity_client_id" {
-  description = "The User Assigned Identity for Argo."
-  value       = azurerm_user_assigned_identity.argo_identity.client_id
-}
-

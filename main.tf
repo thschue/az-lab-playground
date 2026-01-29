@@ -2,6 +2,15 @@ data "azuredevops_project" "project" {
   name = var.devops_project_name
 }
 
+data "azurerm_user_assigned_identity" "argo_identity" {
+  name                = var.argo_identity_name
+  resource_group_name = var.argo_identity_rg_name
+}
+
+data "azuredevops_service_principal" "workload_sp" {
+  display_name = var.argo_identity_name
+}
+
 resource "azurerm_resource_group" "global_rg" {
   location = var.region
   name     = "${var.training_name_prefix}-rg-training-global"
@@ -17,12 +26,13 @@ module "dns" {
 }
 
 module "acr" {
-  source              = "./modules/acr"
-  region              = var.region
-  resource_group_name = azurerm_resource_group.global_rg.name
-  dockerhub_password  = var.dockerhub_password
-  dockerhub_username  = var.dockerhub_username
-  akv_id              = module.akv.akv_id
+  source                  = "./modules/acr"
+  region                  = var.region
+  resource_group_name     = azurerm_resource_group.global_rg.name
+  dockerhub_password      = var.dockerhub_password
+  dockerhub_username      = var.dockerhub_username
+  akv_id                  = module.akv.akv_id
+  argo_service_descriptor = data.azurerm_user_assigned_identity.argo_identity.principal_id
   depends_on = [
     azurerm_resource_group.global_rg
   ]
@@ -52,5 +62,8 @@ module "aks_cluster" {
     module.acr,
     module.akv
   ]
+  argo_devops_service_descriptor = data.azuredevops_service_principal.workload_sp.descriptor
+  argo_identity_id               = data.azurerm_user_assigned_identity.argo_identity.id
+  argo_identity_rg_name          = var.argo_identity_rg_name
 }
 

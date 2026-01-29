@@ -43,3 +43,31 @@ variable "participant_upn" {
   description = "UPN of the participant for role assignments."
   type        = string
 }
+
+variable "argo_identity_id" {
+  description = "The name of the Argo CD managed identity."
+  type        = string
+}
+
+variable "argo_identity_rg_name" {
+  description = "The name of the Argo CD managed identity."
+  type        = string
+  default     = ""
+}
+
+variable "argo_devops_service_descriptor" {
+  description = "The Azure DevOps service principal descriptor for Argo Workflows."
+  type        = string
+}
+
+variable "node_count" {
+  description = "The number of nodes in the default node pool."
+  type        = number
+  default     = 1
+}
+
+variable "node_type" {
+  description = "The VM size for the nodes in the default node pool."
+  type        = string
+  default     = "Standard_B2s_v2"
+}

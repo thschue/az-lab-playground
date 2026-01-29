@@ -52,17 +52,23 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
   automatic_upgrade_channel = "stable"
 
+  web_app_routing {
+    dns_zone_ids = [ var.dns_zone_id ]
+  }
+
   default_node_pool {
     name                    = "default"
     host_encryption_enabled = true
-    vm_size                 = "Standard_D2d_v4"
-    node_count              = 2
+    vm_size                 = var.node_type
+    node_count              = var.node_count
     min_count               = 1
-    max_count               = 3
+    max_count               = 4
     max_pods                = 110
     auto_scaling_enabled    = true
     node_public_ip_enabled  = false
-    os_disk_type            = "Ephemeral"
+
+    # Does not work with B2s
+    #    os_disk_type            = "Ephemeral"
     os_disk_size_gb         = 40
     upgrade_settings {
       max_surge                     = "10%"
@@ -76,7 +82,8 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
   lifecycle {
     ignore_changes = [
-      api_server_access_profile
+      api_server_access_profile,
+      default_node_pool[0].node_count
     ]
   }
 }
@@ -99,3 +106,8 @@ resource "azurerm_role_assignment" "aks_admin" {
   }
 }
 
+resource "azurerm_role_assignment" "web_app_routing_private_dns_zone" {
+  scope                = var.dns_zone_id
+  role_definition_name = "DNS Zone Contributor"
+  principal_id         = azurerm_kubernetes_cluster.aks_cluster.web_app_routing[0].web_app_routing_identity[0].object_id
+}

@@ -19,3 +19,7 @@ variable "dockerhub_password" {
 variable "akv_id" {
   type = string
 }
+
+variable "argo_service_descriptor" {
+  type = string
+}
